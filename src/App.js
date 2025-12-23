@@ -183,7 +183,7 @@ export default function App() {
       />
       <br /><br />
 
-      <button onClick={copyHTML}>Copy HTML</button>
+      {/* <button onClick={copyHTML}>Copy HTML</button> */}
 
       <h3>Preview (Exact)</h3>
       <div dangerouslySetInnerHTML={{ __html: signatureHTML }} />
