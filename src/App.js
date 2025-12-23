@@ -8,6 +8,23 @@ export default function App() {
   const [position, setPosition] = useState("Head of Operations");
   const [personalPhone, setPersonalPhone] = useState("+91 9947886699");
 
+  // ✅ NEW: handle local image upload → base64
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload a valid image file");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageUrl(reader.result); // base64 string
+    };
+    reader.readAsDataURL(file);
+  };
+
   const signatureHTML = `
 <table width="724" cellspacing="0" cellpadding="0" style="color:#000; font-family:'Google Sans Flex', sans-serif;font-optical-sizing:auto;">
   <tr>
@@ -40,16 +57,22 @@ export default function App() {
               </tr>
 
               <tr>
-                <td><img src="https://www.netstager.com/mail_signature/images/phone.png" width="24" /></td>
+                <td>
+                  <img src="https://www.netstager.com/mail_signature/images/phone.png" width="24" />
+                </td>
                 <td>
                   <a href="tel:${personalPhone}" style="text-decoration:none;color:#000">
-                    <p style="margin:0;font-size:13px;text-transform:uppercase">${personalPhone}</p>
+                    <p style="margin:0;font-size:13px;text-transform:uppercase">
+                      ${personalPhone}
+                    </p>
                   </a>
                 </td>
               </tr>
 
               <tr>
-                <td><img src="https://www.netstager.com/mail_signature/images/mobile.png" width="24" /></td>
+                <td>
+                  <img src="https://www.netstager.com/mail_signature/images/mobile.png" width="24" />
+                </td>
                 <td>
                   <a href="tel:+918448440112" style="text-decoration:none;color:#000">
                     <p style="margin:0;font-size:13px;text-transform:uppercase">
@@ -60,16 +83,23 @@ export default function App() {
               </tr>
 
               <tr>
-                <td><img src="https://www.netstager.com/mail_signature/images/web.png" width="24" /></td>
                 <td>
-                  <a href="https://www.netstager.com" style="text-decoration:none;color:#000">
+                  <img src="https://www.netstager.com/mail_signature/images/web.png" width="24" />
+                </td>
+                <td>
+                  <a
+                    href="https://www.netstager.com/?utm_source=email&utm_medium=referral&utm_campaign=email+signature"
+                    style="text-decoration:none;color:#000"
+                  >
                     <p style="margin:0;font-size:13px">www.netstager.com</p>
                   </a>
                 </td>
               </tr>
 
               <tr>
-                <td valign="top"><img src="https://www.netstager.com/mail_signature/images/location.png" width="24" /></td>
+                <td valign="top">
+                  <img src="https://www.netstager.com/mail_signature/images/location.png" width="24" />
+                </td>
                 <td>
                   <p style="margin:0;font-size:13px">
                     UL Cyberpark, Calicut, Kerala, India, 673016.
@@ -100,39 +130,57 @@ export default function App() {
 </table>
 `;
 
-const copyHTML = () => {
-  const textarea = document.createElement("textarea");
-  textarea.value = signatureHTML;
-  textarea.setAttribute("readonly", "");
-  textarea.style.position = "absolute";
-  textarea.style.left = "-9999px";
+  // ✅ Safe copy (no focus error)
+  const copyHTML = () => {
+    const textarea = document.createElement("textarea");
+    textarea.value = signatureHTML;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "absolute";
+    textarea.style.left = "-9999px";
 
-  document.body.appendChild(textarea);
-  textarea.select();
-  textarea.setSelectionRange(0, textarea.value.length);
-
-  try {
+    document.body.appendChild(textarea);
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
     document.execCommand("copy");
+    document.body.removeChild(textarea);
+
     alert("Exact signature HTML copied");
-  } catch (err) {
-    alert("Copy failed. Please try again.");
-  }
-
-  document.body.removeChild(textarea);
-};
-
+  };
 
   return (
     <div style={{ padding: 24 }}>
       <h2>Email Signature Generator</h2>
 
-      <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="Image URL" />
+      {/* ✅ NEW: Image upload */}
+      <label>
+        <strong>Upload Image (PNG / JPG)</strong>
+      </label>
+      <br />
+      <input type="file" accept="image/*" onChange={handleImageUpload} />
+      <p style={{ fontSize: 12, color: "#777" }}>
+        Image will be embedded directly into the signature
+      </p>
+
+      {/* Existing Image URL (still works) */}
+      <input
+        value={imageUrl.startsWith("http") ? imageUrl : ""}
+        onChange={(e) => setImageUrl(e.target.value)}
+        placeholder="OR Image URL"
+        // style={{ width: "100%" }}
+      />
       <br /><br />
+
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" />
       <br /><br />
+
       <input value={position} onChange={(e) => setPosition(e.target.value)} placeholder="Position" />
       <br /><br />
-      <input value={personalPhone} onChange={(e) => setPersonalPhone(e.target.value)} placeholder="Personal Phone" />
+
+      <input
+        value={personalPhone}
+        onChange={(e) => setPersonalPhone(e.target.value)}
+        placeholder="Personal Phone"
+      />
       <br /><br />
 
       <button onClick={copyHTML}>Copy HTML</button>
